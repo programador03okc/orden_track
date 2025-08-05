@@ -27,6 +27,8 @@
                 </div>
             </div>
         </div>
+
+ 
         <div class="row">
             <div class="col-md-12">
                 <table class="table table-striped table-hover">
@@ -38,7 +40,7 @@
                         <th>FECHA INICIO ENTREGA</th> <!-- inicio_entrega -->
                         <th>FECHA FIN ENTREGA</th> <!-- fecha_entrega -->
                         <th>FECHA DESPACHO</th> <!-- fecha_guia -->
-                        <th>GUIA</th> <!-- guia -->
+                        <th>GUIA <i class="fa-solid fa-file"></i></th> <!-- guia -->
                         <th>FECHA ENTREGA REAL</th> <!-- fecha_entrega_real -->
                     </thead>  
                     <tbody>
