@@ -59,7 +59,15 @@
                                     <td>{{ $orden['inicio_entrega'] }}</td>
                                     <td>{{ $orden['fecha_entrega'] }}</td>
                                     <td>{{ $orden['fecha_guia'] }}</td>
-                                    <td>{{ $orden['guia'] }}</td>
+                                    <td class="text-center">
+                                        @if ($orden->guia)
+                                            <a href="{{ $orden->guia }}" download title="Descargar guía">
+                                                <i class="fa-solid fa-file-pdf fa-lg text-danger"></i>
+                                            </a>
+                                        @else
+                                            <i class="fa-solid fa-file-pdf fa-lg text-secondary" title="Guía no disponible"></i>
+                                        @endif
+                                    </td>
                                     <td>{{ $orden['fecha_entrega_real'] }}</td>
                                 </tr>
                             @endforeach
