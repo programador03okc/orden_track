@@ -14,3 +14,4 @@ use App\Http\Controllers\OrdenController;
 */
 
 Route::get('/', [OrdenController::class, 'index'])->name('home');
+Route::get('/descargar-guia/{id}', [OrdenController::class, 'descargarGuia'])->name('descargar-guia');
