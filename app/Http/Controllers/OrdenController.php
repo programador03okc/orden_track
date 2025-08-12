@@ -3,7 +3,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\OrdenView;
-
+use Illuminate\Support\Facades\DB;
 class OrdenController extends Controller
 {
     public function index(Request $request)
@@ -20,18 +20,52 @@ class OrdenController extends Controller
 
     public function descargarGuia($idOrden)
     {
-        //buscar por $idOrden de la guia y obtener el campo "ruta_archivo" de la tabla  "oc_directas_guias"
+        // Buscar la orden usando el campo 'id'
+        $orden = DB::table('orden_track.ordenes_view')
+                    ->where('id', $idOrden)
+                    ->first();
 
-        $ruta_archivo ="/storage/mgcp/ordenes-compra/guias/1232/T001-4323.pdf";
-        $rutaLimpia = ltrim($ruta_archivo, '/storage/'); // al obtner la ruta del campo, considera storage al inicio pero al usar storage_path ya lo incluye , entonces aqui elimina la parte de "storage"
-        $rutaArchivo = storage_path('app' . '/'.$rutaLimpia);
-        $rutaArchivo = str_replace('orden_track', 'mgc', storage_path('app/' . $rutaLimpia)); // storage_path considera la ruta del proyecto pero como esta el archiv en otro directorio deberia remplazar orden_track por mgc
-
-        if (file_exists($rutaArchivo)) {
-            return response()->download($rutaArchivo);
-        }else{
-            return 'Archivo no encontrado en: ' . $rutaArchivo;
+        if (!$orden) {
+            return response()->json(['error' => 'Orden no encontrada'], 404);
         }
 
+        // Determinar carpeta según tipo o prefijo del nro_orden
+        if (strpos(strtolower($orden->nro_orden), 'directa') === 0 || $orden->tipo === 'directa') {
+            $tipoCarpeta = 'directas';
+        } elseif (strpos(strtolower($orden->nro_orden), 'ocam') === 0 || $orden->tipo === 'am') {
+            $tipoCarpeta = 'propias';
+        } else {
+            return response()->json(['error' => 'Tipo de orden no reconocido'], 400);
+        }
+
+        // Ruta base absoluta apuntando a la carpeta mgc fuera de Laravel
+        $basePath = 'C:/xampp/htdocs/mgc/storage/app/mgcp/ordenes-compra/guias/';
+
+        // Construir la ruta completa a la carpeta con idOrden
+        $carpeta = $basePath . $tipoCarpeta . '/' . $idOrden;
+
+        if (!is_dir($carpeta)) {
+            return response()->json(['error' => 'Carpeta no existe: ' . $carpeta], 404);
+        }
+
+        $files = glob($carpeta . '/*');
+
+        if (empty($files)) {
+            return response()->json(['error' => 'No hay archivos en la carpeta: ' . $carpeta], 404);
+        }
+
+        // Ordenar archivos por fecha de modificación descendente (más reciente primero)
+        usort($files, function($a, $b) {
+            return filemtime($b) - filemtime($a);
+        });
+
+        $archivo = $files[0];
+        //Si el archivo existe lo descargará sino saldra archivo no encontrado
+        if (file_exists($archivo)) {
+            return response()->download($archivo);
+        } else {
+            return response()->json(['error' => 'Archivo no encontrado: ' . $archivo], 404);
+        }
     }
+
 }
