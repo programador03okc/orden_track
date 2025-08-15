@@ -61,7 +61,7 @@
                                     <td>{{ $orden['fecha_guia'] }}</td>
                                     <td class="text-center">
                                         @if ($orden->guia)
-                                            <a href="{{ route('descargar-guia', $orden->id)  }}"  title="Descargar guía">
+                                            <a href="{{ route('guia.ver', $orden->id)  }}" target="_blank" title="Ver guía">
                                                 <i class="fa-solid fa-file-pdf fa-lg text-danger"></i>
                                             </a>
                                         @else

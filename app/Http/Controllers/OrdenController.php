@@ -1,9 +1,10 @@
 <?php
 namespace App\Http\Controllers;
-
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use App\Models\OrdenView;
 use Illuminate\Support\Facades\DB;
+
 class OrdenController extends Controller
 {
     public function index(Request $request)
@@ -20,7 +21,7 @@ class OrdenController extends Controller
 
     public function descargarGuia($idOrden)
     {
-        // Buscar la orden usando el campo 'id'
+        // Buscar la orden usando el campo 'id' en la base de datos esquema / vista
         $orden = DB::table('orden_track.ordenes_view')
                     ->where('id', $idOrden)
                     ->first();
@@ -54,18 +55,24 @@ class OrdenController extends Controller
             return response()->json(['error' => 'No hay archivos en la carpeta: ' . $carpeta], 404);
         }
 
-        // Ordenar archivos por fecha de modificación descendente (más reciente primero)
+        // Ordenar archivos por fecha de modificación descendente
         usort($files, function($a, $b) {
             return filemtime($b) - filemtime($a);
         });
 
         $archivo = $files[0];
-        //Si el archivo existe lo descargará sino saldra archivo no encontrado
+
         if (file_exists($archivo)) {
-            return response()->download($archivo);
+            return response()->file($archivo, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="' . basename($archivo) . '"'
+            ]);
         } else {
             return response()->json(['error' => 'Archivo no encontrado: ' . $archivo], 404);
         }
     }
 
+
+
+    
 }
