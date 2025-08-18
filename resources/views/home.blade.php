@@ -1,8 +1,100 @@
 @extends('layouts.app')
 
 @section('cabecera') 
+@endsection
 
 @section('estilos')
+<style>
+    /* Botón flotante para abrir/cerrar el chat */
+    .chat-toggle {
+        background-color: var(--bs-primary) !important;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 10000;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        cursor: pointer;
+    }
+
+    .chat-box {
+        display: none;
+        position: fixed;
+        bottom: 90px;
+        right: 20px;
+        width: 320px;
+        height: 450px;
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        overflow: hidden;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .chat-header {
+        background-color: var(--bs-primary);
+        color: white;
+        padding: 10px;
+        text-align: center;
+        font-weight: bold;
+    }
+
+    .chat-messages {
+        flex: 1;
+        padding: 10px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .chat-input-area {
+        display: flex;
+        padding: 5px;
+        border-top: 1px solid #ccc;
+        background: #f9f9f9;
+    }
+
+    .chat-input-area input {
+        flex: 1;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        outline: none;
+    }
+
+    .chat-input-area button {
+        margin-left: 5px;
+        padding: 8px 12px;
+        background: var(--bs-primary);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .chat-input-area button:hover {
+        background: #0b5ed7;
+    }
+
+    .message {
+        background: #e9ecef;
+        padding: 6px;
+        border-radius: 4px;
+        max-width: 80%;
+    }
+</style>
 @endsection
 
 @section('cuerpo')
@@ -31,7 +123,7 @@
             </div>
         </form>
 
-        {{-- Tabla con headers --}}
+        {{-- Tabla --}}
         <div class="row">
             <div class="col-md-12">
                 <table class="table table-striped table-hover">
@@ -61,7 +153,7 @@
                                     <td>{{ $orden['fecha_guia'] }}</td>
                                     <td class="text-center">
                                         @if ($orden->guia)
-                                            <a href="{{ route('guia.ver', $orden->id)  }}" target="_blank" title="Ver guía">
+                                            <a href="{{ route('guia.ver', $orden->id) }}" target="_blank" title="Ver guía">
                                                 <i class="fa-solid fa-file-pdf fa-lg text-danger"></i>
                                             </a>
                                         @else
@@ -92,7 +184,48 @@
     </div>
 </div>
 
+<!-- Botón flotante -->
+<button class="chat-toggle" id="chat-toggle">💬</button>
+
+<!-- Caja de chat -->
+<div id="chat-box" class="chat-box" style="display: none">
+    <div class="chat-header">Chatbot</div>
+    <div id="chat-messages" class="chat-messages"></div>
+    <div class="chat-input-area">
+        <input type="text" id="chat-input" placeholder="Escribe un mensaje...">
+        <button id="send-btn">Enviar</button>
+    </div>
+</div>
+
 @endsection
 
 @section('scripts')
+<script>
+    const chatToggle = document.getElementById("chat-toggle");
+    const chatBox = document.getElementById("chat-box");
+    const chatMessages = document.getElementById("chat-messages");
+    const chatInput = document.getElementById("chat-input");
+    const sendBtn = document.getElementById("send-btn");
+
+    chatToggle.addEventListener("click", () => {
+        chatBox.style.display = (chatBox.style.display === "none" || chatBox.style.display === "") ? "flex" : "none";
+    });
+
+    function sendMessage() {
+        const messageText = chatInput.value.trim();
+        if (messageText !== "") {
+            const messageElement = document.createElement("div");
+            messageElement.classList.add("message");
+            messageElement.textContent = messageText;
+            chatMessages.appendChild(messageElement);
+            chatInput.value = "";
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    }
+
+    sendBtn.addEventListener("click", sendMessage);
+    chatInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") sendMessage();
+    });
+</script>
 @endsection

@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\OrdenController;
+use App\Http\Controllers\ChatbotController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -15,3 +16,4 @@ use App\Http\Controllers\OrdenController;
 
 Route::get('/', [OrdenController::class, 'index'])->name('home');
 Route::get('/guia/ver/{idOrden}', [OrdenController::class, 'descargarGuia'])->name('guia.ver');
+Route::post('/chatbot', [ChatbotController::class, 'handle']);
