@@ -88,13 +88,30 @@
         background: #0b5ed7;
     }
 
+    /* Estilos de mensajes */
     .message {
         background: #e9ecef;
         padding: 6px;
         border-radius: 4px;
         max-width: 80%;
+        word-wrap: break-word;
+    }
+
+    /* Usuario (lado derecho, color primario) */
+    .message.user {
+        align-self: flex-start;
+        background: var(--bs-primary);
+        color: white;
+    }
+
+    /* Bot (lado izquierdo, gris) */
+    .message.bot {
+        align-self: flex-end;
+        background: #f1f3f5;
+        color: #212529;
     }
 </style>
+
 @endsection
 
 @section('cuerpo')
@@ -185,7 +202,7 @@
 </div>
 
 <!-- Botón flotante -->
-<button class="chat-toggle" id="chat-toggle">💬</button>
+<button class="chat-toggle" id="chat-toggle">🤖</button>
 
 <!-- Caja de chat -->
 <div id="chat-box" class="chat-box" style="display: none">
@@ -211,15 +228,37 @@
         chatBox.style.display = (chatBox.style.display === "none" || chatBox.style.display === "") ? "flex" : "none";
     });
 
-    function sendMessage() {
+    function appendMessage(text, sender = "user") {
+        const messageElement = document.createElement("div");
+        messageElement.classList.add("message", sender);
+        messageElement.textContent = text;
+        chatMessages.appendChild(messageElement);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    async function sendMessage() {
         const messageText = chatInput.value.trim();
         if (messageText !== "") {
-            const messageElement = document.createElement("div");
-            messageElement.classList.add("message");
-            messageElement.textContent = messageText;
-            chatMessages.appendChild(messageElement);
+            appendMessage(messageText, "user");
             chatInput.value = "";
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Enviar al backend
+            try {
+                const response = await fetch("/chatbot", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
+                    },
+                    body: JSON.stringify({ message: messageText })
+                });
+
+                const data = await response.json();
+                appendMessage(data.reply, "bot");
+
+            } catch (error) {
+                appendMessage("Error al conectar con el servidor.", "bot");
+            }
         }
     }
 
@@ -228,4 +267,6 @@
         if (e.key === "Enter") sendMessage();
     });
 </script>
+
+
 @endsection

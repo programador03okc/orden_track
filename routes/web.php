@@ -15,5 +15,7 @@ use App\Http\Controllers\ChatbotController;
 */
 
 Route::get('/', [OrdenController::class, 'index'])->name('home');
+
 Route::get('/guia/ver/{idOrden}', [OrdenController::class, 'descargarGuia'])->name('guia.ver');
+
 Route::post('/chatbot', [ChatbotController::class, 'handle']);
