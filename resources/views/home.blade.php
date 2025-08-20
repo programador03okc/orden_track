@@ -225,22 +225,90 @@
     const sendBtn = document.getElementById("send-btn");
 
     chatToggle.addEventListener("click", () => {
-        chatBox.style.display = (chatBox.style.display === "none" || chatBox.style.display === "") ? "flex" : "none";
+        const isVisible = chatBox.style.display === "flex";
+        chatBox.style.display = isVisible ? "none" : "flex";
+        
+        // Enviar mensaje de bienvenida cuando se abre el chat por primera vez
+        if (!isVisible && chatMessages.children.length === 0) {
+            enviarMensaje("start");
+        }
     });
 
-    function appendMessage(text, sender = "user") {
+    function agregarMensaje(text, sender = "user", options = null) {
         const messageElement = document.createElement("div");
         messageElement.classList.add("message", sender);
-        messageElement.textContent = text;
+        
+        // Convertir formato de texto
+        let formattedText = text
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<strong>$1</strong>')
+            .replace(/\n/g, '<br>');
+        
+        messageElement.innerHTML = formattedText;
         chatMessages.appendChild(messageElement);
+
+        // Agregar botones de opción si se proporcionan
+        if (options && options.length > 0) {
+            const buttonsContainer = document.createElement("div");
+            buttonsContainer.style.marginTop = "10px";
+            buttonsContainer.style.display = "flex";
+            buttonsContainer.style.flexDirection = "column";
+            buttonsContainer.style.gap = "5px";
+
+            options.forEach(option => {
+                const button = document.createElement("button");
+                button.textContent = option.text;
+                button.style.padding = "8px 12px";
+                button.style.border = "none";
+                button.style.borderRadius = "4px";
+                button.style.cursor = "pointer";
+                button.style.fontSize = "14px";
+                
+                // Dar estilo diferente al botón de WhatsApp
+                if (option.url) {
+                    button.style.background = "#25D366"; // WhatsApp green
+                    button.style.color = "white";
+                    button.onmouseover = () => button.style.background = "#1DA851";
+                    button.onmouseout = () => button.style.background = "#25D366";
+                } else {
+                    button.style.background = "#007bff";
+                    button.style.color = "white";
+                    button.onmouseover = () => button.style.background = "#0056b3";
+                    button.onmouseout = () => button.style.background = "#007bff";
+                }
+                
+                button.addEventListener("click", () => {
+                    // Verificar si este es un botón de enlace externo
+                    if (option.url) {
+                        // Abrir URL externa en nueva pestaña
+                        window.open(option.url, '_blank');
+                        // No remover botones para enlaces externos, solo agregar mensaje de confirmación
+                        agregarMensaje("¡Enlace abierto a Whatsapp!"  , "bot");
+                    } else {
+                        // Remover todos los botones después de la selección para opciones normales
+                        document.querySelectorAll('.message button').forEach(btn => btn.remove());
+                        enviarMensaje(option.value);
+                    }
+                });
+                
+                buttonsContainer.appendChild(button);
+            });
+
+            messageElement.appendChild(buttonsContainer);
+        }
+
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
-    async function sendMessage() {
-        const messageText = chatInput.value.trim();
+    async function enviarMensaje(predefinedMessage = null) {
+        const messageText = predefinedMessage || chatInput.value.trim();
+        
         if (messageText !== "") {
-            appendMessage(messageText, "user");
-            chatInput.value = "";
+            // Solo mostrar mensaje del usuario si no es una acción predefinida
+            if (!predefinedMessage) {
+                agregarMensaje(messageText, "user");
+                chatInput.value = "";
+            }
 
             // Enviar al backend
             try {
@@ -254,17 +322,20 @@
                 });
 
                 const data = await response.json();
-                appendMessage(data.reply, "bot");
+                agregarMensaje(data.reply, "bot", data.options);
 
             } catch (error) {
-                appendMessage("Error al conectar con el servidor.", "bot");
+                agregarMensaje("Error al conectar con el servidor.", "bot");
             }
         }
     }
 
-    sendBtn.addEventListener("click", sendMessage);
+    sendBtn.addEventListener("click", () => enviarMensaje());
     chatInput.addEventListener("keypress", (e) => {
-        if (e.key === "Enter") sendMessage();
+        if (e.key === "Enter") {
+            e.preventDefault();
+            enviarMensaje();
+        }
     });
 </script>
 
