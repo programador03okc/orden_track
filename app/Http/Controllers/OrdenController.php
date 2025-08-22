@@ -14,7 +14,10 @@ class OrdenController extends Controller
         $ordenes = [];
 
         if ($codigo) {
-            $ordenes = OrdenView::where('nro_orden', 'ILIKE', $codigo)->get();
+            $ordenes = OrdenView::where('nro_orden', 'ILIKE', "%{$codigo}%")
+                ->where('tipo', 'ILIKE', 'AM')
+                ->get();
+            
         }
 
         return view('home', compact('ordenes'));

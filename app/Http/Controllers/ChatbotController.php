@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use App\Models\OrdenView;
 
@@ -13,7 +13,7 @@ class ChatbotController extends Controller
             $userMessage = strtolower(trim($request->input('message')));
             
             // Log para depuración
-            \Log::info('Chatbot received message: ' . $userMessage);
+            Log::info('Chatbot received message: ' . $userMessage);
             
             // Manejar diferentes flujos de conversación
             switch ($userMessage) {
@@ -46,8 +46,8 @@ class ChatbotController extends Controller
                     return $this->ManejadorDeMensajeDesconocido();
             }
         } catch (\Exception $e) {
-            \Log::error('General chatbot error: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            Log::error('General chatbot error: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
             
             return response()->json([
                 'reply' => '😔 Ocurrió un error inesperado. Por favor, intenta nuevamente.',
@@ -131,12 +131,12 @@ class ChatbotController extends Controller
     private function buscarOrden($orderNumber)
     {
         try {
-            \Log::info('Searching for order: ' . $orderNumber);
+            Log::info('Searching for order: ' . $orderNumber);
             
             // Intentar primero una consulta simple
             $ordenes = OrdenView::where('nro_orden', 'LIKE', "%{$orderNumber}%")->get();
             
-            \Log::info('Found orders count: ' . $ordenes->count());
+            Log::info('Found orders count: ' . $ordenes->count());
 
             if ($ordenes->isEmpty()) {
                 return response()->json([
@@ -150,7 +150,7 @@ class ChatbotController extends Controller
             }
 
             $orden = $ordenes->first();
-            \Log::info('Order data: ', $orden->toArray());
+            Log::info('Order data: ', $orden->toArray());
             
             $info = "✅ *Orden encontrada:*\n\n";
             $info .= "📋 *Número:* {$orden->nro_orden}\n";
@@ -175,8 +175,8 @@ class ChatbotController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Error searching order: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            Log::error('Error searching order: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
             
             return response()->json([
                 'reply' => '😔 Error: ' . $e->getMessage() . '\n\nPor favor, intenta nuevamente.',
