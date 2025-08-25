@@ -76,6 +76,7 @@ class OrdenController extends Controller
         // Buscar la orden usando el campo 'id' en la base de datos esquema / vista
         $orden = DB::table('orden_track.ordenes_view')
                     ->where('id', $idOrden)
+                    ->where('id_empresa', 1)
                     ->first();
 
         if (!$orden) {
