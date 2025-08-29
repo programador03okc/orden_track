@@ -5,6 +5,20 @@
 
 @section('estilos')
 <style>
+    /* Header siempre blanco */
+    header, .navbar {
+        background: #fff !important;
+        z-index: 1000;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    
+    /* Fondo de la página */
+    body {
+        background: url('{{ asset("img/fondo_sap_okc.jpg") }}') no-repeat center center fixed;
+        background-size: cover;
+        background-attachment: fixed;
+        }
+    
     /* Botón flotante para abrir/cerrar el chat */
     .chat-toggle {
         background-color: var(--bs-primary) !important;
@@ -143,63 +157,64 @@
         {{-- Tabla --}}
         <div class="row">
             <div class="col-md-12">
-                <table class="table table-striped table-hover">
-                    <thead>
-                        <tr>
-                            <th>OCAM</th>
-                            <th>ENTIDAD</th>
-                            <th>EMPRESA</th>
-                            <th>FECHA PUBLICACION</th>
-                            <th>FECHA INICIO ENTREGA</th>
-                            <th>FECHA FIN ENTREGA</th>
-                            <th>FECHA DESPACHO</th>
-                            <th>GUIA</th>
-                            <th>FECHA ENTREGA REAL</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (!empty($ordenes) && count($ordenes) > 0)
-                            @foreach ($ordenes as $orden)
+                @if (!empty($ordenes) && count($ordenes) > 0)
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>OCAM</th>
+                                <th>ENTIDAD</th>
+                                <th>EMPRESA</th>
+                                <th>FECHA PUBLICACION</th>
+                                <th>FECHA INICIO ENTREGA</th>
+                                <th>FECHA FIN ENTREGA</th>
+                                <th>FECHA DESPACHO</th>
+                                <th>GUIA</th>
+                                <th>FECHA ENTREGA REAL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                                @foreach ($ordenes as $orden)
+                                    <tr>
+                                        <td>{{ $orden['nro_orden'] }}</td>
+                                        <td>{{ $orden['nombre_entidad'] }}</td>
+                                        <td>{{ $orden['nombre_empresa'] }}</td>
+                                        <td>{{ $orden['fecha_publicacion'] }}</td>
+                                        <td>{{ $orden['inicio_entrega'] }}</td>
+                                        <td>{{ $orden['fecha_entrega'] }}</td>
+                                        <td>{{ $orden['fecha_guia'] }}</td>
+                                        <td class="text-center">
+                                            @if ($orden->guia)
+                                                <a href="{{ route('guia.ver', $orden->id) }}" target="_blank" title="Ver guía">
+                                                    <i class="fa-solid fa-file-pdf fa-lg text-danger"></i>
+                                                </a>
+                                            @else
+                                                <i class="fa-solid fa-file-pdf fa-lg text-secondary" title="Guía no disponible"></i>
+                                            @endif
+                                        </td>
+                                        <td>{{ $orden['fecha_entrega_real'] }}</td>
+                                    </tr>
+                                @endforeach
+                            @elseif(request('codigo'))
                                 <tr>
-                                    <td>{{ $orden['nro_orden'] }}</td>
-                                    <td>{{ $orden['nombre_entidad'] }}</td>
-                                    <td>{{ $orden['nombre_empresa'] }}</td>
-                                    <td>{{ $orden['fecha_publicacion'] }}</td>
-                                    <td>{{ $orden['inicio_entrega'] }}</td>
-                                    <td>{{ $orden['fecha_entrega'] }}</td>
-                                    <td>{{ $orden['fecha_guia'] }}</td>
-                                    <td class="text-center">
-                                        @if ($orden->guia)
-                                            <a href="{{ route('guia.ver', $orden->id) }}" target="_blank" title="Ver guía">
-                                                <i class="fa-solid fa-file-pdf fa-lg text-danger"></i>
-                                            </a>
-                                        @else
-                                            <i class="fa-solid fa-file-pdf fa-lg text-secondary" title="Guía no disponible"></i>
-                                        @endif
+                                    <td colspan="9" class="text-center">
+                                        No se encontraron resultados para el código: <strong>{{ request('codigo') }}</strong>.
                                     </td>
-                                    <td>{{ $orden['fecha_entrega_real'] }}</td>
                                 </tr>
-                            @endforeach
-                        @elseif(request('codigo'))
-                            <tr>
-                                <td colspan="9" class="text-center">
-                                    No se encontraron resultados para el código: <strong>{{ request('codigo') }}</strong>.
-                                </td>
-                            </tr>
-                        @else
-                            <tr>
-                                <td colspan="9" class="text-center text-muted">
-                                    Ingrese un código y presione "Buscar" para ver resultados.
-                                </td>
-                            </tr>
-                        @endif
-                    </tbody>
-                </table>
+                            @else
+                                <tr>
+                                    <td colspan="9" class="text-center text-muted">
+                                        Ingrese un código y presione "Buscar" para ver resultados.
+                                    </td>
+                                </tr>
+                            @endif
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
 
+        </div>
     </div>
-</div>
 
 <!-- Botón flotante -->
 <button class="chat-toggle" id="chat-toggle">🤖</button>
